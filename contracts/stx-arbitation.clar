@@ -190,3 +190,36 @@
     )
   )
 )
+
+;; PARTICIPANT REGISTRATION SYSTEM
+
+;; Register new creditor entity in the debt management platform
+(define-public (register-platform-creditor)
+  (begin
+    (asserts! (validate-principal-address tx-sender)
+      ERR-INVALID-PRINCIPAL-ADDRESS
+    )
+    (map-set creditor-total-outstanding-claims tx-sender u0)
+    (ok true)
+  )
+)
+
+;; Register new debtor entity in the debt management platform
+(define-public (register-platform-debtor)
+  (begin
+    (asserts! (validate-principal-address tx-sender)
+      ERR-INVALID-PRINCIPAL-ADDRESS
+    )
+    (map-set debtor-total-outstanding-obligations tx-sender u0)
+    (ok true)
+  )
+)
+
+;; ADVANCED DEBT CLAIM MANAGEMENT WITH INTEREST
+
+;; Create comprehensive debt claim with custom interest rate
+(define-public (create-debt-claim-with-interest
+    (debtor-address principal)
+    (principal-debt-amount uint)
+    (custom-interest-rate uint)
+  )
