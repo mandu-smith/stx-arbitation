@@ -261,3 +261,50 @@
         (< debtor-current-obligations (- (pow u2 u128) principal-debt-amount))
         ERR-INVALID-MONETARY-AMOUNT
       )
+
+      ;; Create comprehensive debt claim record
+      (map-set individual-debt-claim-records {
+        debtor-principal: debtor-address,
+        creditor-principal: tx-sender,
+        unique-claim-identifier: next-claim-identifier,
+      } {
+        original-principal-amount: principal-debt-amount,
+        annual-interest-rate-basis-points: custom-interest-rate,
+        claim-creation-block-height: current-block-height,
+        last-interest-calculation-block: current-block-height,
+        accumulated-interest-amount: u0,
+        claim-active-status: true,
+      })
+
+      ;; Update claim counter for this debtor-creditor pair
+      (map-set debtor-creditor-claim-counter {
+        debtor-principal: debtor-address,
+        creditor-principal: tx-sender,
+      }
+        next-claim-identifier
+      )
+
+      ;; Update creditor's total outstanding claims
+      (map-set creditor-total-outstanding-claims tx-sender
+        (+ creditor-current-claims principal-debt-amount)
+      )
+
+      ;; Update debtor's total outstanding obligations
+      (map-set debtor-total-outstanding-obligations debtor-address
+        (+ debtor-current-obligations principal-debt-amount)
+      )
+
+      (ok next-claim-identifier)
+    )
+  )
+)
+
+;; Create debt claim with standard interest rate
+(define-public (create-standard-debt-claim
+    (debtor-address principal)
+    (principal-debt-amount uint)
+  )
+  (create-debt-claim-with-interest debtor-address principal-debt-amount
+    (var-get standard-annual-interest-rate)
+  )
+)
