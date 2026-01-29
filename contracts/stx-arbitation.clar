@@ -87,3 +87,45 @@
     claim-active-status: bool,
   }
 )
+
+;; Comprehensive dispute management system
+(define-map dispute-resolution-records
+  uint
+  {
+    dispute-initiator: principal,
+    dispute-respondent: principal,
+    dispute-category: (string-ascii 50),
+    disputed-monetary-amount: uint,
+    related-claim-identifier: uint,
+    current-dispute-status: (string-ascii 20),
+    assigned-arbitrator: (optional principal),
+    resolution-block-height: (optional uint),
+    detailed-resolution-summary: (string-ascii 200),
+  }
+)
+
+;; Arbitrator authorization and performance metrics
+(define-map certified-arbitrator-registry
+  principal
+  {
+    arbitrator-active-status: bool,
+    total-resolved-cases: uint,
+    arbitrator-reputation-score: uint,
+  }
+)
+
+;; Claim identifier tracking for debtor-creditor pairs
+(define-map debtor-creditor-claim-counter
+  {
+    debtor-principal: principal,
+    creditor-principal: principal,
+  }
+  uint
+)
+
+;; INPUT VALIDATION AND SECURITY FUNCTIONS
+
+;; Validate principal address is not null or invalid
+(define-private (validate-principal-address (target-address principal))
+  (not (is-eq target-address 'SP000000000000000000002Q6VF78))
+)
