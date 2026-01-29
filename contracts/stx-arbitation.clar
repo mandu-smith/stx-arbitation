@@ -223,3 +223,41 @@
     (principal-debt-amount uint)
     (custom-interest-rate uint)
   )
+  (let (
+      (creditor-current-claims (default-to u0 (map-get? creditor-total-outstanding-claims tx-sender)))
+      (debtor-current-obligations (default-to u0
+        (map-get? debtor-total-outstanding-obligations debtor-address)
+      ))
+      (next-claim-identifier (+
+        (default-to u0
+          (map-get? debtor-creditor-claim-counter {
+            debtor-principal: debtor-address,
+            creditor-principal: tx-sender,
+          })
+        )
+        u1
+      ))
+      (current-block-height stacks-block-height)
+    )
+    (begin
+      ;; Comprehensive input validation and business rules
+      (asserts! (validate-principal-address debtor-address)
+        ERR-INVALID-PRINCIPAL-ADDRESS
+      )
+      (asserts! (validate-positive-uint principal-debt-amount)
+        ERR-INVALID-MONETARY-AMOUNT
+      )
+      (asserts! (is-some (map-get? creditor-total-outstanding-claims tx-sender))
+        ERR-CREDITOR-NOT-REGISTERED
+      )
+      (asserts! (<= custom-interest-rate u2000) ERR-INVALID-INTEREST-RATE) ;; Maximum 20% annual
+
+      ;; Prevent integer overflow in financial calculations
+      (asserts!
+        (< creditor-current-claims (- (pow u2 u128) principal-debt-amount))
+        ERR-INVALID-MONETARY-AMOUNT
+      )
+      (asserts!
+        (< debtor-current-obligations (- (pow u2 u128) principal-debt-amount))
+        ERR-INVALID-MONETARY-AMOUNT
+      )
